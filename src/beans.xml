@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" 
+    xmlns:context="http://www.springframework.org/schema/context" 
+
+xmlns:tx="http://www.springframework.org/schema/tx" 
+    xsi:schemaLocation="http://www.springframework.org/schema/beans    
+      http://www.springframework.org/schema/beans/spring-beans-2.5.xsd   
+      http://www.springframework.org/schema/context   
+      http://www.springframework.org/schema/context/spring-context-2.5.xsd   
+      http://www.springframework.org/schema/aop   
+      http://www.springframework.org/schema/aop/spring-aop-2.5.xsd   
+      http://www.springframework.org/schema/tx   
+      http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"> 
+
+   <context:annotation-config/>     <!-- 开启注解 -->
+<!-- 下面这句话表示，让spring自动去扫描以com开头的包的组件(action、service),然后自动完成组装 -->
+<!-- <context:component-scan base-package="com"/>  --> 
+	
+	<!-- 配置service对象 -->
+	<bean id="testService" class="com.xiaonei.service.TestService">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<bean id="countryServiceImpl" class="com.xiaonei.service.impl.CountryServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>		
+	<bean id="provinceServiceImpl" class="com.xiaonei.service.impl.ProvinceServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>	
+	<bean id="universityServiceImpl" class="com.xiaonei.service.impl.UniversityServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>	
+	<bean id="userServiceImpl" class="com.xiaonei.service.impl.UserServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<bean id="useruniversityServiceImpl" class="com.xiaonei.service.impl.UseruniversityServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	
+	
+	<!-- 配置action -->
+	<bean name="/test" class="com.xiaonei.web.action.TestAction">
+		<!-- 给该action注入一个service -->
+		<property name="testService" ref="testService"/>
+	</bean>	
+	<bean name="/register" class="com.xiaonei.web.action.RegisterAction">
+		<property name="countryService" ref="countryServiceImpl"/>
+		<property name="provinceService" ref="provinceServiceImpl"/>
+		<property name="universityService" ref="universityServiceImpl"/>
+		<property name="userService" ref="userServiceImpl"/>
+		<property name="useruniversityService" ref="useruniversityServiceImpl"/>
+	</bean>
+	<bean name="/profile" class="com.xiaonei.web.action.ProfileAction"/>
+	<bean name="/login" class="com.xiaonei.web.action.LoginAction">
+		<property name="userService" ref="userServiceImpl"/>
+	</bean>		
+
+	
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+	    <property name="url" value="jdbc:mysql://localhost:3306/xiaonei?useUnicode=true&amp;characterEncoding=UTF-8"/>
+	    <property name="username" value="root"/>
+	    <property name="password" value="root"/>
+	     <!-- 连接池启动时的初始值 -->
+		<property name="initialSize" value="3"/>
+		 <!-- 连接池的最大值 -->
+		 <property name="maxActive" value="500"/>
+	 	<!-- 最大空闲值.当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放一部分，一直减少到maxIdle为止 -->
+		<property name="maxIdle" value="2"/>
+		<!--  最小空闲值.当空闲的连接数少于阀值时，连接池就会预申请去一些连接，以免洪峰来时来不及申请 -->
+		<property name="minIdle" value="1"/>
+	</bean>
+	
+	<!-- 配置会话工厂 -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+	     <!-- 设置数据源 -->
+	     <property name="dataSource" ref="dataSource"/>
+	     <!-- spring接管了hibernate对象映射文件 -->
+	     <property name="mappingResources">
+		    <list>
+		      <value>com/xiaonei/domain/City.hbm.xml</value>
+		      <value>com/xiaonei/domain/Country.hbm.xml</value>
+		      <value>com/xiaonei/domain/Junior.hbm.xml</value>
+		      <value>com/xiaonei/domain/Primaryschool.hbm.xml</value>
+		      <value>com/xiaonei/domain/Province.hbm.xml</value>
+		      <value>com/xiaonei/domain/Senior.hbm.xml</value>
+		      <value>com/xiaonei/domain/Techschool.hbm.xml</value>
+		      <value>com/xiaonei/domain/Town.hbm.xml</value>
+		      <value>com/xiaonei/domain/University.hbm.xml</value>
+		      <value>com/xiaonei/domain/Usernet.hbm.xml</value>
+		      <value>com/xiaonei/domain/Users.hbm.xml</value>
+		      <value>com/xiaonei/domain/Usersenior.hbm.xml</value>
+		      <value>com/xiaonei/domain/Useruniversity.hbm.xml</value>
+		    </list>
+	     </property>
+	     <property name="hibernateProperties">
+		    <value>
+		        	hibernate.dialect=org.hibernate.dialect.MySQLDialect
+		        	hibernate.hbm2ddl.auto=update
+					hibernate.show_sql=true
+		 	</value>
+	    </property>
+	</bean>
+	
+	<!-- 配置事物管理器，统一管理sessionFactory的事务 -->
+	<bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<!-- 启用事务注解 -->
+	<tx:annotation-driven transaction-manager="txManager"/>
+	
+	
+	
+	
+	
+</beans>
+
+
+

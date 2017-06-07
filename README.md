@@ -1,1 +1,1 @@
-# xiaoneiwang
+采用SSH框架实现校园内部网站
